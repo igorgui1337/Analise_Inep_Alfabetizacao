@@ -1,0 +1,471 @@
+{
+  "brasil": {
+    "ANO": 2025,
+    "CD_UF": NaN,
+    "SIGLA_UF": NaN,
+    "NOME_UF": "Brasil",
+    "REDE": "PÚBLICA",
+    "ALF_2023": 56.0,
+    "ALF_2024": 59.0,
+    "ALF_2025": 66,
+    "META_2024": 60.0,
+    "META_2025": 64.0,
+    "META_2026": 67.0,
+    "META_2027": 71.0,
+    "META_2028": 74.0,
+    "META_2029": 77.0,
+    "META_2030": 80,
+    "PARTICIPACAO_2025": 88,
+    "SAEB_2019": 54.7,
+    "SAEB_2021": 35.77,
+    "PARTICIPACAO_2023": 86.0,
+    "PARTICIPACAO_2024": 87.37
+  },
+  "top_alf": [
+    {
+      "SIGLA_UF": "CE",
+      "NOME_UF": "Ceará",
+      "REGIAO": "Nordeste",
+      "ALF_2023": 85.0,
+      "ALF_2024": 85.0,
+      "ALF_2025": 84,
+      "META_2025": 80.0,
+      "GAP_META_2025": 4.0
+    },
+    {
+      "SIGLA_UF": "GO",
+      "NOME_UF": "Goiás",
+      "REGIAO": "Centro-Oeste",
+      "ALF_2023": 67.0,
+      "ALF_2024": 73.0,
+      "ALF_2025": 80,
+      "META_2025": 71.0,
+      "GAP_META_2025": 9.0
+    },
+    {
+      "SIGLA_UF": "PR",
+      "NOME_UF": "Paraná",
+      "REGIAO": "Sul",
+      "ALF_2023": 73.0,
+      "ALF_2024": 70.0,
+      "ALF_2025": 80,
+      "META_2025": 75.0,
+      "GAP_META_2025": 5.0
+    },
+    {
+      "SIGLA_UF": "PI",
+      "NOME_UF": "Piauí",
+      "REGIAO": "Nordeste",
+      "ALF_2023": 52.0,
+      "ALF_2024": 60.0,
+      "ALF_2025": 77,
+      "META_2025": 62.0,
+      "GAP_META_2025": 15.0
+    },
+    {
+      "SIGLA_UF": "ES",
+      "NOME_UF": "Espírito Santo",
+      "REGIAO": "Sudeste",
+      "ALF_2023": 68.0,
+      "ALF_2024": 72.0,
+      "ALF_2025": 77,
+      "META_2025": 72.0,
+      "GAP_META_2025": 5.0
+    }
+  ],
+  "bottom_alf": [
+    {
+      "SIGLA_UF": "AM",
+      "NOME_UF": "Amazonas",
+      "REGIAO": "Norte",
+      "ALF_2023": 52.0,
+      "ALF_2024": 49.0,
+      "ALF_2025": 57,
+      "META_2025": 61.0,
+      "GAP_META_2025": -4.0
+    },
+    {
+      "SIGLA_UF": "BA",
+      "NOME_UF": "Bahia",
+      "REGIAO": "Nordeste",
+      "ALF_2023": 37.0,
+      "ALF_2024": 36.0,
+      "ALF_2025": 55,
+      "META_2025": 50.0,
+      "GAP_META_2025": 5.0
+    },
+    {
+      "SIGLA_UF": "RS",
+      "NOME_UF": "Rio Grande do Sul",
+      "REGIAO": "Sul",
+      "ALF_2023": 63.0,
+      "ALF_2024": 45.0,
+      "ALF_2025": 52,
+      "META_2025": 69.0,
+      "GAP_META_2025": -17.0
+    },
+    {
+      "SIGLA_UF": "SE",
+      "NOME_UF": "Sergipe",
+      "REGIAO": "Nordeste",
+      "ALF_2023": 31.0,
+      "ALF_2024": 38.0,
+      "ALF_2025": 50,
+      "META_2025": 46.0,
+      "GAP_META_2025": 4.0
+    },
+    {
+      "SIGLA_UF": "RN",
+      "NOME_UF": "Rio Grande do Norte",
+      "REGIAO": "Nordeste",
+      "ALF_2023": 37.0,
+      "ALF_2024": 39.0,
+      "ALF_2025": 48,
+      "META_2025": 51.0,
+      "GAP_META_2025": -3.0
+    }
+  ],
+  "top_avanco": [
+    {
+      "SIGLA_UF": "PI",
+      "VAR_23_24": 8.0,
+      "VAR_24_25": 17.0,
+      "VAR_23_25": 25.0
+    },
+    {
+      "SIGLA_UF": "AL",
+      "VAR_23_24": 5.0,
+      "VAR_24_25": 15.0,
+      "VAR_23_25": 20.0
+    },
+    {
+      "SIGLA_UF": "MT",
+      "VAR_23_24": 6.0,
+      "VAR_24_25": 14.0,
+      "VAR_23_25": 20.0
+    },
+    {
+      "SIGLA_UF": "PB",
+      "VAR_23_24": 5.0,
+      "VAR_24_25": 15.0,
+      "VAR_23_25": 20.0
+    },
+    {
+      "SIGLA_UF": "MS",
+      "VAR_23_24": 9.0,
+      "VAR_24_25": 10.0,
+      "VAR_23_25": 19.0
+    }
+  ],
+  "regiao_alf": [
+    {
+      "REGIAO": "Centro-Oeste",
+      "ALF_2025": 71.5
+    },
+    {
+      "REGIAO": "Sudeste",
+      "ALF_2025": 68.0
+    },
+    {
+      "REGIAO": "Nordeste",
+      "ALF_2025": 64.88888888888889
+    },
+    {
+      "REGIAO": "Sul",
+      "ALF_2025": 63.666666666666664
+    },
+    {
+      "REGIAO": "Norte",
+      "ALF_2025": 62.285714285714285
+    }
+  ],
+  "regiao_var": [
+    {
+      "REGIAO": "Centro-Oeste",
+      "VAR_23_25": 17.333333333333332
+    },
+    {
+      "REGIAO": "Nordeste",
+      "VAR_23_25": 14.666666666666666
+    },
+    {
+      "REGIAO": "Norte",
+      "VAR_23_25": 12.0
+    },
+    {
+      "REGIAO": "Sudeste",
+      "VAR_23_25": 10.0
+    },
+    {
+      "REGIAO": "Sul",
+      "VAR_23_25": -2.0
+    }
+  ],
+  "acima_meta": [
+    {
+      "SIGLA_UF": "AC",
+      "ALF_2025": 68,
+      "META_2025": 57.0,
+      "GAP_META_2025": 11.0
+    },
+    {
+      "SIGLA_UF": "AL",
+      "ALF_2025": 64,
+      "META_2025": 56.0,
+      "GAP_META_2025": 8.0
+    },
+    {
+      "SIGLA_UF": "AP",
+      "ALF_2025": 60,
+      "META_2025": 54.0,
+      "GAP_META_2025": 6.0
+    },
+    {
+      "SIGLA_UF": "BA",
+      "ALF_2025": 55,
+      "META_2025": 50.0,
+      "GAP_META_2025": 5.0
+    },
+    {
+      "SIGLA_UF": "CE",
+      "ALF_2025": 84,
+      "META_2025": 80.0,
+      "GAP_META_2025": 4.0
+    },
+    {
+      "SIGLA_UF": "DF",
+      "ALF_2025": 65,
+      "META_2025": 63.0,
+      "GAP_META_2025": 2.0
+    },
+    {
+      "SIGLA_UF": "ES",
+      "ALF_2025": 77,
+      "META_2025": 72.0,
+      "GAP_META_2025": 5.0
+    },
+    {
+      "SIGLA_UF": "GO",
+      "ALF_2025": 80,
+      "META_2025": 71.0,
+      "GAP_META_2025": 9.0
+    },
+    {
+      "SIGLA_UF": "MA",
+      "ALF_2025": 69,
+      "META_2025": 64.0,
+      "GAP_META_2025": 5.0
+    },
+    {
+      "SIGLA_UF": "MG",
+      "ALF_2025": 74,
+      "META_2025": 66.0,
+      "GAP_META_2025": 8.0
+    },
+    {
+      "SIGLA_UF": "MS",
+      "ALF_2025": 66,
+      "META_2025": 58.0,
+      "GAP_META_2025": 8.0
+    },
+    {
+      "SIGLA_UF": "MT",
+      "ALF_2025": 75,
+      "META_2025": 63.0,
+      "GAP_META_2025": 12.0
+    },
+    {
+      "SIGLA_UF": "PB",
+      "ALF_2025": 71,
+      "META_2025": 61.0,
+      "GAP_META_2025": 10.0
+    },
+    {
+      "SIGLA_UF": "PE",
+      "ALF_2025": 66,
+      "META_2025": 66.0,
+      "GAP_META_2025": 0.0
+    },
+    {
+      "SIGLA_UF": "PI",
+      "ALF_2025": 77,
+      "META_2025": 62.0,
+      "GAP_META_2025": 15.0
+    },
+    {
+      "SIGLA_UF": "PR",
+      "ALF_2025": 80,
+      "META_2025": 75.0,
+      "GAP_META_2025": 5.0
+    },
+    {
+      "SIGLA_UF": "RO",
+      "ALF_2025": 75,
+      "META_2025": 70.0,
+      "GAP_META_2025": 5.0
+    },
+    {
+      "SIGLA_UF": "SE",
+      "ALF_2025": 50,
+      "META_2025": 46.0,
+      "GAP_META_2025": 4.0
+    },
+    {
+      "SIGLA_UF": "SP",
+      "ALF_2025": 61,
+      "META_2025": 61.0,
+      "GAP_META_2025": 0.0
+    },
+    {
+      "SIGLA_UF": "TO",
+      "ALF_2025": 61,
+      "META_2025": 55.0,
+      "GAP_META_2025": 6.0
+    }
+  ],
+  "abaixo_meta": [
+    {
+      "SIGLA_UF": "AM",
+      "ALF_2025": 57,
+      "META_2025": 61.0,
+      "GAP_META_2025": -4.0
+    },
+    {
+      "SIGLA_UF": "PA",
+      "ALF_2025": 58,
+      "META_2025": 59.0,
+      "GAP_META_2025": -1.0
+    },
+    {
+      "SIGLA_UF": "RJ",
+      "ALF_2025": 60,
+      "META_2025": 61.0,
+      "GAP_META_2025": -1.0
+    },
+    {
+      "SIGLA_UF": "RN",
+      "ALF_2025": 48,
+      "META_2025": 51.0,
+      "GAP_META_2025": -3.0
+    },
+    {
+      "SIGLA_UF": "RR",
+      "ALF_2025": 57,
+      "META_2025": NaN,
+      "GAP_META_2025": NaN
+    },
+    {
+      "SIGLA_UF": "RS",
+      "ALF_2025": 52,
+      "META_2025": 69.0,
+      "GAP_META_2025": -17.0
+    },
+    {
+      "SIGLA_UF": "SC",
+      "ALF_2025": 59,
+      "META_2025": 67.0,
+      "GAP_META_2025": -8.0
+    }
+  ],
+  "atinge_2030_count": 10,
+  "nao_atinge_2030_count": 17,
+  "atinge_2030_ufs": [
+    "AC",
+    "CE",
+    "ES",
+    "GO",
+    "MG",
+    "MT",
+    "PB",
+    "PI",
+    "PR",
+    "RO"
+  ],
+  "nao_atinge_2030_ufs": [
+    {
+      "SIGLA_UF": "AL",
+      "PROJ_2030": 78.7,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "AM",
+      "PROJ_2030": 62.1,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "AP",
+      "PROJ_2030": 75.0,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "BA",
+      "PROJ_2030": 71.9,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "DF",
+      "PROJ_2030": 74.3,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "MA",
+      "PROJ_2030": 77.8,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "MS",
+      "PROJ_2030": 79.4,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "PA",
+      "PROJ_2030": 67.5,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "PE",
+      "PROJ_2030": 71.5,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "RJ",
+      "PROJ_2030": 67.4,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "RN",
+      "PROJ_2030": 60.8,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "RR",
+      "PROJ_2030": 57.0,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "RS",
+      "PROJ_2030": 24.5,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "SC",
+      "PROJ_2030": 54.0,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "SE",
+      "PROJ_2030": 69.6,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "SP",
+      "PROJ_2030": 69.0,
+      "META_2030": 80
+    },
+    {
+      "SIGLA_UF": "TO",
+      "PROJ_2030": 75.0,
+      "META_2030": 80
+    }
+  ]
+}

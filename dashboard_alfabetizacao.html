@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Evolução da Alfabetização no Brasil (2019-2025)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .card {
+            background: #ffffff; border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            padding: 1.5rem;
+        }
+        .metric-title {
+            font-size: 0.875rem; color: #6b7280; text-transform: uppercase;
+            letter-spacing: 0.05em; font-weight: 600;
+        }
+        .metric-value { font-size: 2.25rem; font-weight: 700; color: #111827; margin-top: 0.5rem; }
+        .nav-link.active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white shadow-lg z-10 hidden md:block">
+            <div class="h-16 flex items-center justify-center border-b border-gray-200">
+                <h1 class="text-xl font-bold text-blue-600">EduDash Br</h1>
+            </div>
+            <nav class="p-4 space-y-2">
+                <a href="#" onclick="showPage('page1')" id="nav-page1" class="nav-link active block py-2 px-4 rounded bg-blue-50 text-blue-700">Visão Geral</a>
+                <a href="#" onclick="showPage('page2')" id="nav-page2" class="nav-link block py-2 px-4 rounded hover:bg-gray-50">Regiões e Estados</a>
+                <a href="#" onclick="showPage('page3')" id="nav-page3" class="nav-link block py-2 px-4 rounded hover:bg-gray-50">Participação e Projeções</a>
+            </nav>
+            <div class="p-4 mt-8 border-t border-gray-200">
+                <p class="text-xs text-gray-500 mb-2">Filtro Global:</p>
+                <select id="global-region-filter" onchange="applyFilters()" class="w-full text-sm p-2 border rounded border-gray-300">
+                    <option value="Brasil">Todos (Brasil)</option>
+                    <option value="Norte">Norte</option>
+                    <option value="Nordeste">Nordeste</option>
+                    <option value="Centro-Oeste">Centro-Oeste</option>
+                    <option value="Sudeste">Sudeste</option>
+                    <option value="Sul">Sul</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-x-hidden overflow-y-auto w-full">
+            <!-- Header -->
+            <header class="bg-white shadow flex items-center justify-between px-6 py-4">
+                <h2 id="page-title" class="text-2xl font-semibold text-gray-800">Visão Geral</h2>
+                <span class="text-sm text-gray-500">Dados consolidados: 3 bases do MEC/Inep (2023 a 2025)</span>
+            </header>
+
+            <main class="p-6">
+                <!-- Page 1: Visão Geral -->
+                <div id="page1" class="page-content block">
+                    <!-- Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="card">
+                            <div class="metric-title">MÉDIA BRASIL (2025)</div>
+                            <div class="metric-value" id="card-media-brasil">--%</div>
+                            <div class="text-sm flex items-center mt-2 font-medium" id="card-cresc-brasil">--</div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-title">UFs ACIMA DA META (2025)</div>
+                            <div class="metric-value text-blue-600" id="card-ufs-acima">--</div>
+                            <div class="text-sm text-gray-500 mt-2">de 27 UFs</div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-title">PARTICIPAÇÃO BRASIL (2025)</div>
+                            <div class="metric-value text-purple-600" id="card-part-brasil">--%</div>
+                            <div class="text-sm text-gray-500 mt-2">Escolas/Alunos avaliados</div>
+                        </div>
+                        <div class="card">
+                            <div class="metric-title">ESTADO LÍDER (2025)</div>
+                            <div class="metric-value text-emerald-600" id="card-estado-lider">--</div>
+                            <div class="text-sm text-gray-500 mt-2" id="card-estado-lider-val">--% Alfabetizados</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts row 1 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Evolução Histórica da Alfabetização (2019-2025)</h3>
+                            <canvas id="chart-evolucao"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Resultado vs Meta 2025 (Regiões)</h3>
+                            <canvas id="chart-metas-regiao"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2: Regiões e Estados -->
+                <div id="page2" class="page-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Ranking por Região (Alfabetização 2025)</h3>
+                            <canvas id="chart-ranking-regioes"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">UFs com Maior Avanço (2023 → 2025)</h3>
+                            <canvas id="chart-maior-avanco"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Top 5 Estados (2025)</h3>
+                            <canvas id="chart-top5"></canvas>
+                        </div>
+                        <div class="card">
+                            <h3 class="text-lg font-semibold mb-4">Bottom 5 Estados (2025)</h3>
+                            <canvas id="chart-bottom5"></canvas>
+                        </div>
+                    </div>
+                    <div class="card mb-6">
+                        <h3 class="text-lg font-semibold mb-2">Visão do Gap para a Meta (2025)</h3>
+                        <p class="text-sm text-gray-500 mb-4">Diferença entre o resultado atingido e a meta pactuada para 2025. Valores positivos indicam superação da meta.</p>
+                        <canvas id="chart-gap-metas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Page 3: Participação e Projeções -->
+                <div id="page3" class="page-content hidden">
+                    
+                    <div class="card mb-6">
+                        <h3 class="text-lg font-semibold mb-2">Trajetória e Projeção até 2030</h3>
+                        <p class="text-sm text-gray-500 mb-4">Acompanhamento contínuo da série histórica desde 2019 projetado linearmente até 2030, comparado com a meta estabelecida para o recorte atual.</p>
+                        <canvas id="chart-projecao-longa" style="max-height: 400px;"></canvas>
+                    </div>
+
+                    <div class="card mb-6">
+                        <h3 class="text-lg font-semibold mb-2">Evolução da Taxa de Participação (2023 - 2025)</h3>
+                        <p class="text-sm text-gray-500 mb-4">Percentual de alunos/escolas que participaram da avaliação do Sistema SAEB por ano e região.</p>
+                        <canvas id="chart-participacao" style="max-height: 350px;"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Projeção e Risco de Atingimento Futuro (2026 - 2029)</h3>
+                            <select id="projecao-ano-filter" onchange="renderProjectionsTable()" class="p-2 border rounded border-gray-300">
+                                <option value="2026">Projeção 2026</option>
+                                <option value="2027">Projeção 2027</option>
+                                <option value="2028">Projeção 2028</option>
+                                <option value="2029">Projeção 2029</option>
+                                <option value="2030" selected>Projeção 2030</option>
+                            </select>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left text-sm whitespace-nowrap">
+                                <thead class="uppercase tracking-wider border-b-2 border-gray-200 bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3">UF</th>
+                                        <th class="px-4 py-3">Res. 2025</th>
+                                        <th class="px-4 py-3">Partic. 2025</th>
+                                        <th class="px-4 py-3">Tendência a.a.</th>
+                                        <th class="px-4 py-3" id="th-proj-ano">Proj. 2029</th>
+                                        <th class="px-4 py-3" id="th-meta-ano">Meta 2029</th>
+                                        <th class="px-4 py-3">Status Esperado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-projections-body" class="divide-y divide-gray-200">
+                                    <!-- Dynamic rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <script>
+        Chart.register(ChartDataLabels);
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = "#4b5563";
+        
+        const db = {"ufs": [{"ANO": 2025, "CD_UF": 12.0, "SIGLA_UF": "AC", "NOME_UF": "Acre", "REDE": "PÚBLICA", "ALF_2023": NaN, "ALF_2024": 51.0, "ALF_2025": 68, "META_2024": NaN, "META_2025": 57.0, "META_2026": 62.0, "META_2027": 67.0, "META_2028": 72.0, "META_2029": 76.0, "META_2030": 80, "PARTICIPACAO_2025": 82, "SAEB_2019": 52.87, "SAEB_2021": 20.05, "PARTICIPACAO_2023": NaN, "PARTICIPACAO_2024": 80.86922165152114, "REGIAO": "Norte", "VAR_23_24": NaN, "VAR_24_25": 17.0, "VAR_23_25": NaN, "GAP_META_2024": NaN, "GAP_META_2025": 11.0, "PROJ_2026": 73.4, "PROJ_2027": 78.0, "PROJ_2028": 81.7, "PROJ_2029": 84.8, "PROJ_2030": 87.4, "TENDENCIA_ANUAL": 17.0, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 27.0, "SIGLA_UF": "AL", "NOME_UF": "Alagoas", "REDE": "PÚBLICA", "ALF_2023": 44.0, "ALF_2024": 49.0, "ALF_2025": 64, "META_2024": 50.0, "META_2025": 56.0, "META_2026": 61.0, "META_2027": 67.0, "META_2028": 72.0, "META_2029": 76.0, "META_2030": 80, "PARTICIPACAO_2025": 94, "SAEB_2019": 39.01, "SAEB_2021": 30.04, "PARTICIPACAO_2023": 92.36, "PARTICIPACAO_2024": 93.78396840010691, "REGIAO": "Nordeste", "VAR_23_24": 5.0, "VAR_24_25": 15.0, "VAR_23_25": 20.0, "GAP_META_2024": -1.0, "GAP_META_2025": 8.0, "PROJ_2026": 67.6, "PROJ_2027": 70.8, "PROJ_2028": 73.8, "PROJ_2029": 76.4, "PROJ_2030": 78.7, "TENDENCIA_ANUAL": 10.0, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 13.0, "SIGLA_UF": "AM", "NOME_UF": "Amazonas", "REDE": "PÚBLICA", "ALF_2023": 52.0, "ALF_2024": 49.0, "ALF_2025": 57, "META_2024": 57.0, "META_2025": 61.0, "META_2026": 66.0, "META_2027": 70.0, "META_2028": 73.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 86, "SAEB_2019": 43.83, "SAEB_2021": 28.76, "PARTICIPACAO_2023": 76.14, "PARTICIPACAO_2024": 79.49477411227998, "REGIAO": "Norte", "VAR_23_24": -3.0, "VAR_24_25": 8.0, "VAR_23_25": 5.0, "GAP_META_2024": -8.0, "GAP_META_2025": -4.0, "PROJ_2026": 58.1, "PROJ_2027": 59.1, "PROJ_2028": 60.1, "PROJ_2029": 61.1, "PROJ_2030": 62.1, "TENDENCIA_ANUAL": 2.5, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Abaixo da Meta"}, {"ANO": 2025, "CD_UF": 16.0, "SIGLA_UF": "AP", "NOME_UF": "Amapá", "REDE": "PÚBLICA", "ALF_2023": 42.0, "ALF_2024": 47.0, "ALF_2025": 60, "META_2024": 48.0, "META_2025": 54.0, "META_2026": 60.0, "META_2027": 66.0, "META_2028": 71.0, "META_2029": 76.0, "META_2030": 80, "PARTICIPACAO_2025": 88, "SAEB_2019": 24.77, "SAEB_2021": 18.77, "PARTICIPACAO_2023": 89.68, "PARTICIPACAO_2024": 89.14149443561207, "REGIAO": "Norte", "VAR_23_24": 5.0, "VAR_24_25": 13.0, "VAR_23_25": 18.0, "GAP_META_2024": -1.0, "GAP_META_2025": 6.0, "PROJ_2026": 63.6, "PROJ_2027": 66.9, "PROJ_2028": 69.9, "PROJ_2029": 72.6, "PROJ_2030": 75.0, "TENDENCIA_ANUAL": 9.0, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 29.0, "SIGLA_UF": "BA", "NOME_UF": "Bahia", "REDE": "PÚBLICA", "ALF_2023": 37.0, "ALF_2024": 36.0, "ALF_2025": 55, "META_2024": 43.0, "META_2025": 50.0, "META_2026": 57.0, "META_2027": 64.0, "META_2028": 70.0, "META_2029": 75.0, "META_2030": 80, "PARTICIPACAO_2025": 87, "SAEB_2019": 41.36, "SAEB_2021": 24.49, "PARTICIPACAO_2023": 84.53, "PARTICIPACAO_2024": 90.04421141883181, "REGIAO": "Nordeste", "VAR_23_24": -1.0, "VAR_24_25": 19.0, "VAR_23_25": 18.0, "GAP_META_2024": -7.0, "GAP_META_2025": 5.0, "PROJ_2026": 59.0, "PROJ_2027": 62.7, "PROJ_2028": 66.1, "PROJ_2029": 69.1, "PROJ_2030": 71.9, "TENDENCIA_ANUAL": 9.0, "STATUS_2026": "Atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 23.0, "SIGLA_UF": "CE", "NOME_UF": "Ceará", "REDE": "PÚBLICA", "ALF_2023": 85.0, "ALF_2024": 85.0, "ALF_2025": 84, "META_2024": 80.0, "META_2025": 80.0, "META_2026": 80.0, "META_2027": 80.0, "META_2028": 80.0, "META_2029": 80.0, "META_2030": 80, "PARTICIPACAO_2025": 96, "SAEB_2019": 73.48, "SAEB_2021": 44.93, "PARTICIPACAO_2023": 95.22, "PARTICIPACAO_2024": 98.12677388836327, "REGIAO": "Nordeste", "VAR_23_24": 0.0, "VAR_24_25": -1.0, "VAR_23_25": -1.0, "GAP_META_2024": 5.0, "GAP_META_2025": 4.0, "PROJ_2026": 83.5, "PROJ_2027": 83.0, "PROJ_2028": 82.5, "PROJ_2029": 82.0, "PROJ_2030": 81.5, "TENDENCIA_ANUAL": -0.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 53.0, "SIGLA_UF": "DF", "NOME_UF": "Distrito Federal", "REDE": "PÚBLICA", "ALF_2023": NaN, "ALF_2024": 59.0, "ALF_2025": 65, "META_2024": NaN, "META_2025": 63.0, "META_2026": 67.0, "META_2027": 71.0, "META_2028": 74.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 85, "SAEB_2019": 63.36, "SAEB_2021": 39.85, "PARTICIPACAO_2023": NaN, "PARTICIPACAO_2024": 79.83, "REGIAO": "Centro-Oeste", "VAR_23_24": NaN, "VAR_24_25": 6.0, "VAR_23_25": NaN, "GAP_META_2024": NaN, "GAP_META_2025": 2.0, "PROJ_2026": 67.1, "PROJ_2027": 69.1, "PROJ_2028": 70.9, "PROJ_2029": 72.7, "PROJ_2030": 74.3, "TENDENCIA_ANUAL": 6.0, "STATUS_2026": "Atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 32.0, "SIGLA_UF": "ES", "NOME_UF": "Espírito Santo", "REDE": "PÚBLICA", "ALF_2023": 68.0, "ALF_2024": 72.0, "ALF_2025": 77, "META_2024": 70.0, "META_2025": 72.0, "META_2026": 74.0, "META_2027": 75.0, "META_2028": 77.0, "META_2029": 79.0, "META_2030": 80, "PARTICIPACAO_2025": 92, "SAEB_2019": 62.45, "SAEB_2021": 46.1, "PARTICIPACAO_2023": 88.4, "PARTICIPACAO_2024": 89.93651194080053, "REGIAO": "Sudeste", "VAR_23_24": 4.0, "VAR_24_25": 5.0, "VAR_23_25": 9.0, "GAP_META_2024": 2.0, "GAP_META_2025": 5.0, "PROJ_2026": 78.0, "PROJ_2027": 79.0, "PROJ_2028": 80.0, "PROJ_2029": 80.9, "PROJ_2030": 81.7, "TENDENCIA_ANUAL": 4.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 52.0, "SIGLA_UF": "GO", "NOME_UF": "Goiás", "REDE": "PÚBLICA", "ALF_2023": 67.0, "ALF_2024": 73.0, "ALF_2025": 80, "META_2024": 69.0, "META_2025": 71.0, "META_2026": 73.0, "META_2027": 75.0, "META_2028": 77.0, "META_2029": 78.0, "META_2030": 80, "PARTICIPACAO_2025": 88, "SAEB_2019": 63.0, "SAEB_2021": 38.94, "PARTICIPACAO_2023": 87.03, "PARTICIPACAO_2024": 92.07873321930234, "REGIAO": "Centro-Oeste", "VAR_23_24": 6.0, "VAR_24_25": 7.0, "VAR_23_25": 13.0, "GAP_META_2024": 4.0, "GAP_META_2025": 9.0, "PROJ_2026": 81.3, "PROJ_2027": 82.5, "PROJ_2028": 83.7, "PROJ_2029": 84.7, "PROJ_2030": 85.7, "TENDENCIA_ANUAL": 6.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 21.0, "SIGLA_UF": "MA", "NOME_UF": "Maranhão", "REDE": "PÚBLICA", "ALF_2023": 56.0, "ALF_2024": 60.0, "ALF_2025": 69, "META_2024": 60.0, "META_2025": 64.0, "META_2026": 68.0, "META_2027": 71.0, "META_2028": 74.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 92, "SAEB_2019": 33.14, "SAEB_2021": 22.82, "PARTICIPACAO_2023": 89.11, "PARTICIPACAO_2024": 90.89295250191232, "REGIAO": "Nordeste", "VAR_23_24": 4.0, "VAR_24_25": 9.0, "VAR_23_25": 13.0, "GAP_META_2024": 0.0, "GAP_META_2025": 5.0, "PROJ_2026": 71.0, "PROJ_2027": 72.9, "PROJ_2028": 74.7, "PROJ_2029": 76.3, "PROJ_2030": 77.8, "TENDENCIA_ANUAL": 6.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 31.0, "SIGLA_UF": "MG", "NOME_UF": "Minas Gerais", "REDE": "PÚBLICA", "ALF_2023": 60.0, "ALF_2024": 72.0, "ALF_2025": 74, "META_2024": 63.0, "META_2025": 66.0, "META_2026": 70.0, "META_2027": 72.0, "META_2028": 75.0, "META_2029": 78.0, "META_2030": 80, "PARTICIPACAO_2025": 89, "SAEB_2019": 63.7, "SAEB_2021": 43.17, "PARTICIPACAO_2023": 89.59, "PARTICIPACAO_2024": 88.85306333095771, "REGIAO": "Sudeste", "VAR_23_24": 12.0, "VAR_24_25": 2.0, "VAR_23_25": 14.0, "GAP_META_2024": 9.0, "GAP_META_2025": 8.0, "PROJ_2026": 75.8, "PROJ_2027": 77.5, "PROJ_2028": 79.1, "PROJ_2029": 80.6, "PROJ_2030": 81.9, "TENDENCIA_ANUAL": 7.0, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 50.0, "SIGLA_UF": "MS", "NOME_UF": "Mato Grosso do Sul", "REDE": "PÚBLICA", "ALF_2023": 47.0, "ALF_2024": 56.0, "ALF_2025": 66, "META_2024": 53.0, "META_2025": 58.0, "META_2026": 63.0, "META_2027": 68.0, "META_2028": 72.0, "META_2029": 76.0, "META_2030": 80, "PARTICIPACAO_2025": 92, "SAEB_2019": 40.68, "SAEB_2021": 30.57, "PARTICIPACAO_2023": 87.95, "PARTICIPACAO_2024": 90.04331099228145, "REGIAO": "Centro-Oeste", "VAR_23_24": 9.0, "VAR_24_25": 10.0, "VAR_23_25": 19.0, "GAP_META_2024": 3.0, "GAP_META_2025": 8.0, "PROJ_2026": 69.2, "PROJ_2027": 72.2, "PROJ_2028": 74.8, "PROJ_2029": 77.2, "PROJ_2030": 79.4, "TENDENCIA_ANUAL": 9.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 51.0, "SIGLA_UF": "MT", "NOME_UF": "Mato Grosso", "REDE": "PÚBLICA", "ALF_2023": 55.0, "ALF_2024": 61.0, "ALF_2025": 75, "META_2024": 59.0, "META_2025": 63.0, "META_2026": 67.0, "META_2027": 71.0, "META_2028": 74.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 94, "SAEB_2019": 52.32, "SAEB_2021": 22.31, "PARTICIPACAO_2023": 87.47, "PARTICIPACAO_2024": 88.45874619837143, "REGIAO": "Centro-Oeste", "VAR_23_24": 6.0, "VAR_24_25": 14.0, "VAR_23_25": 20.0, "GAP_META_2024": 2.0, "GAP_META_2025": 12.0, "PROJ_2026": 77.5, "PROJ_2027": 79.8, "PROJ_2028": 81.8, "PROJ_2029": 83.6, "PROJ_2030": 85.2, "TENDENCIA_ANUAL": 10.0, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 15.0, "SIGLA_UF": "PA", "NOME_UF": "Pará", "REDE": "PÚBLICA", "ALF_2023": 48.0, "ALF_2024": 48.0, "ALF_2025": 58, "META_2024": 54.0, "META_2025": 59.0, "META_2026": 64.0, "META_2027": 68.0, "META_2028": 73.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 87, "SAEB_2019": 37.02, "SAEB_2021": 36.69, "PARTICIPACAO_2023": 80.55, "PARTICIPACAO_2024": 83.21281043398245, "REGIAO": "Norte", "VAR_23_24": 0.0, "VAR_24_25": 10.0, "VAR_23_25": 10.0, "GAP_META_2024": -6.0, "GAP_META_2025": -1.0, "PROJ_2026": 60.1, "PROJ_2027": 62.1, "PROJ_2028": 64.0, "PROJ_2029": 65.8, "PROJ_2030": 67.5, "TENDENCIA_ANUAL": 5.0, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Abaixo da Meta"}, {"ANO": 2025, "CD_UF": 25.0, "SIGLA_UF": "PB", "NOME_UF": "Paraíba", "REDE": "PÚBLICA", "ALF_2023": 51.0, "ALF_2024": 56.0, "ALF_2025": 71, "META_2024": 56.0, "META_2025": 61.0, "META_2026": 65.0, "META_2027": 69.0, "META_2028": 73.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 90, "SAEB_2019": 44.98, "SAEB_2021": 39.16, "PARTICIPACAO_2023": 88.22, "PARTICIPACAO_2024": 88.285543438025, "REGIAO": "Nordeste", "VAR_23_24": 5.0, "VAR_24_25": 15.0, "VAR_23_25": 20.0, "GAP_META_2024": 0.0, "GAP_META_2025": 10.0, "PROJ_2026": 73.9, "PROJ_2027": 76.5, "PROJ_2028": 78.9, "PROJ_2029": 81.0, "PROJ_2030": 82.9, "TENDENCIA_ANUAL": 10.0, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 26.0, "SIGLA_UF": "PE", "NOME_UF": "Pernambuco", "REDE": "PÚBLICA", "ALF_2023": 59.0, "ALF_2024": 61.0, "ALF_2025": 66, "META_2024": 62.0, "META_2025": 66.0, "META_2026": 69.0, "META_2027": 72.0, "META_2028": 75.0, "META_2029": 78.0, "META_2030": 80, "PARTICIPACAO_2025": 93, "SAEB_2019": 45.04, "SAEB_2021": 27.59, "PARTICIPACAO_2023": 91.93, "PARTICIPACAO_2024": 94.7548531607765, "REGIAO": "Nordeste", "VAR_23_24": 2.0, "VAR_24_25": 5.0, "VAR_23_25": 7.0, "GAP_META_2024": -1.0, "GAP_META_2025": 0.0, "PROJ_2026": 67.2, "PROJ_2027": 68.3, "PROJ_2028": 69.4, "PROJ_2029": 70.5, "PROJ_2030": 71.5, "TENDENCIA_ANUAL": 3.5, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 22.0, "SIGLA_UF": "PI", "NOME_UF": "Piauí", "REDE": "PÚBLICA", "ALF_2023": 52.0, "ALF_2024": 60.0, "ALF_2025": 77, "META_2024": 57.0, "META_2025": 62.0, "META_2026": 66.0, "META_2027": 70.0, "META_2028": 74.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 94, "SAEB_2019": 49.53, "SAEB_2021": 37.33, "PARTICIPACAO_2023": 93.37, "PARTICIPACAO_2024": 95.09086473960238, "REGIAO": "Nordeste", "VAR_23_24": 8.0, "VAR_24_25": 17.0, "VAR_23_25": 25.0, "GAP_META_2024": 3.0, "GAP_META_2025": 15.0, "PROJ_2026": 79.9, "PROJ_2027": 82.4, "PROJ_2028": 84.6, "PROJ_2029": 86.5, "PROJ_2030": 88.2, "TENDENCIA_ANUAL": 12.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 41.0, "SIGLA_UF": "PR", "NOME_UF": "Paraná", "REDE": "PÚBLICA", "ALF_2023": 73.0, "ALF_2024": 70.0, "ALF_2025": 80, "META_2024": 74.0, "META_2025": 75.0, "META_2026": 76.0, "META_2027": 77.0, "META_2028": 78.0, "META_2029": 79.0, "META_2030": 80, "PARTICIPACAO_2025": 87, "SAEB_2019": 67.94, "SAEB_2021": 39.53, "PARTICIPACAO_2023": 86.18, "PARTICIPACAO_2024": 86.24532104808523, "REGIAO": "Sul", "VAR_23_24": -3.0, "VAR_24_25": 10.0, "VAR_23_25": 7.0, "GAP_META_2024": -4.0, "GAP_META_2025": 5.0, "PROJ_2026": 80.7, "PROJ_2027": 81.4, "PROJ_2028": 82.0, "PROJ_2029": 82.7, "PROJ_2030": 83.3, "TENDENCIA_ANUAL": 3.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 33.0, "SIGLA_UF": "RJ", "NOME_UF": "Rio de Janeiro", "REDE": "PÚBLICA", "ALF_2023": 52.0, "ALF_2024": 55.0, "ALF_2025": 60, "META_2024": 57.0, "META_2025": 61.0, "META_2026": 66.0, "META_2027": 70.0, "META_2028": 73.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 83, "SAEB_2019": 49.44, "SAEB_2021": 27.35, "PARTICIPACAO_2023": 81.21, "PARTICIPACAO_2024": 83.11619601878184, "REGIAO": "Sudeste", "VAR_23_24": 3.0, "VAR_24_25": 5.0, "VAR_23_25": 8.0, "GAP_META_2024": -2.0, "GAP_META_2025": -1.0, "PROJ_2026": 61.6, "PROJ_2027": 63.1, "PROJ_2028": 64.6, "PROJ_2029": 66.0, "PROJ_2030": 67.4, "TENDENCIA_ANUAL": 4.0, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Abaixo da Meta"}, {"ANO": 2025, "CD_UF": 24.0, "SIGLA_UF": "RN", "NOME_UF": "Rio Grande do Norte", "REDE": "PÚBLICA", "ALF_2023": 37.0, "ALF_2024": 39.0, "ALF_2025": 48, "META_2024": 44.0, "META_2025": 51.0, "META_2026": 57.0, "META_2027": 64.0, "META_2028": 70.0, "META_2029": 75.0, "META_2030": 80, "PARTICIPACAO_2025": 85, "SAEB_2019": 32.3, "SAEB_2021": 17.89, "PARTICIPACAO_2023": 78.55, "PARTICIPACAO_2024": 77.7169291472499, "REGIAO": "Nordeste", "VAR_23_24": 2.0, "VAR_24_25": 9.0, "VAR_23_25": 11.0, "GAP_META_2024": -5.0, "GAP_META_2025": -3.0, "PROJ_2026": 50.9, "PROJ_2027": 53.6, "PROJ_2028": 56.1, "PROJ_2029": 58.5, "PROJ_2030": 60.8, "TENDENCIA_ANUAL": 5.5, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Abaixo da Meta"}, {"ANO": 2025, "CD_UF": 11.0, "SIGLA_UF": "RO", "NOME_UF": "Rondônia", "REDE": "PÚBLICA", "ALF_2023": 65.0, "ALF_2024": 63.0, "ALF_2025": 75, "META_2024": 67.0, "META_2025": 70.0, "META_2026": 72.0, "META_2027": 74.0, "META_2028": 76.0, "META_2029": 78.0, "META_2030": 80, "PARTICIPACAO_2025": 79, "SAEB_2019": 46.18, "SAEB_2021": 25.22, "PARTICIPACAO_2023": 88.1, "PARTICIPACAO_2024": 88.33127535720585, "REGIAO": "Norte", "VAR_23_24": -2.0, "VAR_24_25": 12.0, "VAR_23_25": 10.0, "GAP_META_2024": -4.0, "GAP_META_2025": 5.0, "PROJ_2026": 76.2, "PROJ_2027": 77.4, "PROJ_2028": 78.6, "PROJ_2029": 79.6, "PROJ_2030": 80.7, "TENDENCIA_ANUAL": 5.0, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Atinge", "STATUS_2029": "Atinge", "STATUS_2030": "Atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 14.0, "SIGLA_UF": "RR", "NOME_UF": "Roraima", "REDE": "PÚBLICA", "ALF_2023": NaN, "ALF_2024": NaN, "ALF_2025": 57, "META_2024": NaN, "META_2025": NaN, "META_2026": 62.33, "META_2027": 67.36, "META_2028": 72.01, "META_2029": 76.24, "META_2030": 80, "PARTICIPACAO_2025": 82, "SAEB_2019": 45.47, "SAEB_2021": 27.31, "PARTICIPACAO_2023": NaN, "PARTICIPACAO_2024": NaN, "REGIAO": "Norte", "VAR_23_24": NaN, "VAR_24_25": NaN, "VAR_23_25": NaN, "GAP_META_2024": NaN, "GAP_META_2025": NaN, "PROJ_2026": 57.0, "PROJ_2027": 57.0, "PROJ_2028": 57.0, "PROJ_2029": 57.0, "PROJ_2030": 57.0, "TENDENCIA_ANUAL": 0.0, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Abaixo da Meta"}, {"ANO": 2025, "CD_UF": 43.0, "SIGLA_UF": "RS", "NOME_UF": "Rio Grande do Sul", "REDE": "PÚBLICA", "ALF_2023": 63.0, "ALF_2024": 45.0, "ALF_2025": 52, "META_2024": 66.0, "META_2025": 69.0, "META_2026": 71.0, "META_2027": 74.0, "META_2028": 76.0, "META_2029": 78.0, "META_2030": 80, "PARTICIPACAO_2025": 86, "SAEB_2019": 67.78, "SAEB_2021": 34.73, "PARTICIPACAO_2023": 81.44, "PARTICIPACAO_2024": 82.86102233470655, "REGIAO": "Sul", "VAR_23_24": -18.0, "VAR_24_25": 7.0, "VAR_23_25": -11.0, "GAP_META_2024": -21.0, "GAP_META_2025": -17.0, "PROJ_2026": 46.5, "PROJ_2027": 41.0, "PROJ_2028": 35.5, "PROJ_2029": 30.0, "PROJ_2030": 24.5, "TENDENCIA_ANUAL": -5.5, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Abaixo da Meta"}, {"ANO": 2025, "CD_UF": 42.0, "SIGLA_UF": "SC", "NOME_UF": "Santa Catarina", "REDE": "PÚBLICA", "ALF_2023": 61.0, "ALF_2024": 62.0, "ALF_2025": 59, "META_2024": 65.0, "META_2025": 67.0, "META_2026": 70.0, "META_2027": 73.0, "META_2028": 75.0, "META_2029": 78.0, "META_2030": 80, "PARTICIPACAO_2025": 87, "SAEB_2019": 68.93, "SAEB_2021": 55.21, "PARTICIPACAO_2023": 78.6, "PARTICIPACAO_2024": 70.05103956327181, "REGIAO": "Sul", "VAR_23_24": 1.0, "VAR_24_25": -3.0, "VAR_23_25": -2.0, "GAP_META_2024": -3.0, "GAP_META_2025": -8.0, "PROJ_2026": 58.0, "PROJ_2027": 57.0, "PROJ_2028": 56.0, "PROJ_2029": 55.0, "PROJ_2030": 54.0, "TENDENCIA_ANUAL": -1.0, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Abaixo da Meta"}, {"ANO": 2025, "CD_UF": 28.0, "SIGLA_UF": "SE", "NOME_UF": "Sergipe", "REDE": "PÚBLICA", "ALF_2023": 31.0, "ALF_2024": 38.0, "ALF_2025": 50, "META_2024": 38.0, "META_2025": 46.0, "META_2026": 54.0, "META_2027": 61.0, "META_2028": 68.0, "META_2029": 75.0, "META_2030": 80, "PARTICIPACAO_2025": 87, "SAEB_2019": 30.91, "SAEB_2021": 19.63, "PARTICIPACAO_2023": 88.34, "PARTICIPACAO_2024": 92.83912483912484, "REGIAO": "Nordeste", "VAR_23_24": 7.0, "VAR_24_25": 12.0, "VAR_23_25": 19.0, "GAP_META_2024": 0.0, "GAP_META_2025": 4.0, "PROJ_2026": 54.8, "PROJ_2027": 59.0, "PROJ_2028": 62.9, "PROJ_2029": 66.5, "PROJ_2030": 69.6, "TENDENCIA_ANUAL": 9.5, "STATUS_2026": "Atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 35.0, "SIGLA_UF": "SP", "NOME_UF": "São Paulo", "REDE": "PÚBLICA", "ALF_2023": 52.0, "ALF_2024": 58.0, "ALF_2025": 61, "META_2024": 57.0, "META_2025": 61.0, "META_2026": 65.0, "META_2027": 70.0, "META_2028": 73.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 89, "SAEB_2019": 59.81, "SAEB_2021": 40.62, "PARTICIPACAO_2023": 88.75, "PARTICIPACAO_2024": 89.11747476568132, "REGIAO": "Sudeste", "VAR_23_24": 6.0, "VAR_24_25": 3.0, "VAR_23_25": 9.0, "GAP_META_2024": 1.0, "GAP_META_2025": 0.0, "PROJ_2026": 62.8, "PROJ_2027": 64.4, "PROJ_2028": 66.0, "PROJ_2029": 67.6, "PROJ_2030": 69.0, "TENDENCIA_ANUAL": 4.5, "STATUS_2026": "Não atinge", "STATUS_2027": "Não atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}, {"ANO": 2025, "CD_UF": 17.0, "SIGLA_UF": "TO", "NOME_UF": "Tocantins", "REDE": "PÚBLICA", "ALF_2023": 44.0, "ALF_2024": 50.0, "ALF_2025": 61, "META_2024": 50.0, "META_2025": 55.0, "META_2026": 61.0, "META_2027": 67.0, "META_2028": 72.0, "META_2029": 76.0, "META_2030": 80, "PARTICIPACAO_2025": 89, "SAEB_2019": 38.35, "SAEB_2021": 13.77, "PARTICIPACAO_2023": 83.91, "PARTICIPACAO_2024": 85.14525761716773, "REGIAO": "Norte", "VAR_23_24": 6.0, "VAR_24_25": 11.0, "VAR_23_25": 17.0, "GAP_META_2024": 0.0, "GAP_META_2025": 6.0, "PROJ_2026": 64.3, "PROJ_2027": 67.3, "PROJ_2028": 70.1, "PROJ_2029": 72.7, "PROJ_2030": 75.0, "TENDENCIA_ANUAL": 8.5, "STATUS_2026": "Atinge", "STATUS_2027": "Atinge", "STATUS_2028": "Não atinge", "STATUS_2029": "Não atinge", "STATUS_2030": "Não atinge", "STATUS_2025": "Acima da Meta"}], "brasil": {"ANO": 2025, "CD_UF": NaN, "SIGLA_UF": NaN, "NOME_UF": "Brasil", "REDE": "PÚBLICA", "ALF_2023": 56.0, "ALF_2024": 59.0, "ALF_2025": 66, "META_2024": 60.0, "META_2025": 64.0, "META_2026": 67.0, "META_2027": 71.0, "META_2028": 74.0, "META_2029": 77.0, "META_2030": 80, "PARTICIPACAO_2025": 88, "SAEB_2019": 54.7, "SAEB_2021": 35.77, "PARTICIPACAO_2023": 86.0, "PARTICIPACAO_2024": 87.37}};
+        let filteredUfs = db.ufs;
+        let charts = {};
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('active', 'bg-blue-50', 'text-blue-700');
+            });
+            document.getElementById('nav-' + pageId).classList.add('active', 'bg-blue-50', 'text-blue-700');
+            
+            const titles = { 'page1': 'Visão Geral', 'page2': 'Análise por Regiões e Estados', 'page3': 'Participação e Projeções Futuras' };
+            document.getElementById('page-title').innerText = titles[pageId] || 'Dashboard';
+            window.dispatchEvent(new Event('resize'));
+        }
+
+        function applyFilters() {
+            const regiao = document.getElementById('global-region-filter').value;
+            filteredUfs = regiao === "Brasil" ? db.ufs : db.ufs.filter(u => u.REGIAO === regiao);
+            renderDashboard();
+        }
+
+        const fPct = (val) => (val === null || isNaN(val)) ? '--' : Number(val).toFixed(1) + '%';
+        const parseNum = (val) => isNaN(parseFloat(val)) ? null : parseFloat(val);
+
+        function agruparRegiaoMedia(data, campos) {
+            const res = {};
+            data.forEach(d => {
+                if(!res[d.REGIAO]) res[d.REGIAO] = {};
+                campos.forEach(c => {
+                    if(!res[d.REGIAO][c]) res[d.REGIAO][c] = [];
+                    const v = parseNum(d[c]);
+                    if(v !== null) res[d.REGIAO][c].push(v);
+                });
+            });
+            return Object.keys(res).map(r => {
+                let obj = { regiao: r };
+                campos.forEach(c => {
+                    obj[c] = res[r][c].length ? res[r][c].reduce((a,b)=>a+b,0) / res[r][c].length : null;
+                });
+                return obj;
+            }).sort((a,b) => (b.ALF_2025||0) - (a.ALF_2025||0));
+        }
+
+        function initChart(id, config) {
+            if (charts[id]) charts[id].destroy();
+            const ctx = document.getElementById(id).getContext('2d');
+            charts[id] = new Chart(ctx, config);
+        }
+
+        function renderDashboard() {
+            renderCards();
+            renderEvolucao();
+            renderMetasRegiao();
+            renderRankingRegioes();
+            renderMaiorAvanco();
+            renderTopBottom();
+            renderGapMetas();
+            renderParticipacao();
+            renderProjecaoLonga();
+            renderProjectionsTable();
+        }
+
+        function renderCards() {
+            if(db.brasil && db.brasil.ALF_2025) {
+                document.getElementById('card-media-brasil').innerText = fPct(db.brasil.ALF_2025);
+                const diff = (db.brasil.ALF_2025 - (db.brasil.ALF_2023||0)).toFixed(1);
+                document.getElementById('card-cresc-brasil').innerHTML = 
+                    `<span class="${diff >= 0 ? 'text-green-600' : 'text-red-500'}">${diff >= 0 ? '↑' : '↓'} ${Math.abs(diff)} p.p. vs 2023</span>`;
+                
+                document.getElementById('card-part-brasil').innerText = fPct(db.brasil.PARTICIPACAO_2025);
+            }
+
+            const acima = filteredUfs.filter(u => u.STATUS_2025 === 'Acima da Meta').length;
+            document.getElementById('card-ufs-acima').innerText = acima;
+
+            const sortedUfs = [...filteredUfs].filter(u => u.ALF_2025 !== null).sort((a,b) => b.ALF_2025 - a.ALF_2025);
+            if(sortedUfs.length > 0) {
+                document.getElementById('card-estado-lider').innerText = sortedUfs[0].SIGLA_UF;
+                document.getElementById('card-estado-lider-val').innerText = fPct(sortedUfs[0].ALF_2025) + ' (' + sortedUfs[0].NOME_UF + ')';
+            }
+        }
+
+        function renderEvolucao() {
+            const isBrasil = document.getElementById('global-region-filter').value === 'Brasil';
+            let datasets = [];
+            const labels = ['2019 (SAEB)', '2021 (SAEB)', '2023', '2024', '2025'];
+            
+            if (isBrasil && db.brasil) {
+                datasets.push({
+                    label: 'Média Brasil',
+                    data: [db.brasil.SAEB_2019, db.brasil.SAEB_2021, db.brasil.ALF_2023, db.brasil.ALF_2024, db.brasil.ALF_2025],
+                    borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.3, borderWidth: 3
+                });
+            }
+
+            const colors = ['#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2'];
+            const regioes = [...new Set(filteredUfs.map(u => u.REGIAO))];
+            regioes.forEach((r, idx) => {
+                let rgUfs = filteredUfs.filter(u => u.REGIAO === r);
+                const avg = (campo) => {
+                    let vals = rgUfs.map(u => parseNum(u[campo])).filter(v => v !== null);
+                    return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+                };
+                datasets.push({
+                    label: `Média ${r}`,
+                    data: [avg('SAEB_2019'), avg('SAEB_2021'), avg('ALF_2023'), avg('ALF_2024'), avg('ALF_2025')],
+                    borderColor: colors[idx%colors.length], borderDash: isBrasil ? [5, 5] : [], tension: 0.3
+                });
+            });
+
+            initChart('chart-evolucao', {
+                type: 'line', data: { labels, datasets },
+                options: { plugins: { datalabels: { display: false }, legend: { position: 'bottom' } } }
+            });
+        }
+
+        function renderMetasRegiao() {
+            const rData = agruparRegiaoMedia(filteredUfs, ['ALF_2025', 'META_2025']);
+            initChart('chart-metas-regiao', {
+                type: 'bar',
+                data: {
+                    labels: rData.map(d => d.regiao),
+                    datasets: [
+                        { label: 'Resultado 2025', data: rData.map(d => d.ALF_2025), backgroundColor: '#3b82f6', borderRadius: 4 },
+                        { label: 'Meta 2025', data: rData.map(d => d.META_2025), backgroundColor: '#d1d5db', type: 'line', borderWidth: 0, pointRadius: 10, pointBackgroundColor: '#4b5563', pointStyle: 'rectRot' }
+                    ]
+                },
+                options: { plugins: { datalabels: { color: '#fff', font: {weight: 'bold'}, formatter: v => v?.toFixed(0)+'%' } } }
+            });
+        }
+
+        function renderRankingRegioes() {
+               const rData = agruparRegiaoMedia(db.ufs, ['ALF_2025']);
+               initChart('chart-ranking-regioes', {
+                   type: 'bar',
+                   data: {
+                       labels: rData.map(d => d.regiao),
+                       datasets: [{
+                           label: 'Média Alfabetização 2025 (%)',
+                           data: rData.map(d => d.ALF_2025),
+                           backgroundColor: rData.map((d,i) => i===0 ? '#10b981' : (i===rData.length-1 ? '#f43f5e' : '#6366f1')),
+                           borderRadius: 4
+                       }]
+                   },
+                   options: { indexAxis: 'y', plugins: { datalabels: { anchor: 'end', align: 'left', color: '#fff', formatter: v=>v?.toFixed(1)+'%' }, legend: {display:false} } }
+               });
+        }
+
+        function renderTopBottom() {
+            const sorted = [...filteredUfs].filter(u => u.ALF_2025).sort((a,b) => b.ALF_2025 - a.ALF_2025);
+            const top5 = sorted.slice(0, 5);
+            const bottom5 = sorted.slice(-5).reverse();
+
+            initChart('chart-top5', {
+                type: 'bar', data: { labels: top5.map(d => d.SIGLA_UF), datasets: [{ data: top5.map(d => d.ALF_2025), backgroundColor: '#10b981', borderRadius: 4 }] },
+                options: { plugins: { legend: {display:false} }, scales: {y: {min: 40}} }
+            });
+
+            initChart('chart-bottom5', {
+                type: 'bar', data: { labels: bottom5.map(d => d.SIGLA_UF), datasets: [{ data: bottom5.map(d => d.ALF_2025), backgroundColor: '#f43f5e', borderRadius: 4 }] },
+                options: { plugins: { legend: {display:false} }, scales: {y: {min: 20}} }
+            });
+        }
+
+        function renderMaiorAvanco() {
+            const sorted = [...filteredUfs].filter(u => u.VAR_23_25 !== null && !isNaN(u.VAR_23_25)).sort((a,b) => b.VAR_23_25 - a.VAR_23_25);
+            initChart('chart-maior-avanco', {
+                type: 'bar', data: { labels: sorted.slice(0, 5).map(d => d.SIGLA_UF), datasets: [{ label: 'Evolução + (p.p.)', data: sorted.slice(0, 5).map(d => d.VAR_23_25), backgroundColor: '#0ea5e9' }] },
+                options: { plugins: { datalabels: { anchor: 'end', align: 'top', formatter: v=>'+'+v.toFixed(1) }, legend: {display:false} } }
+            });
+        }
+
+        function renderGapMetas() {
+            const sorted = [...filteredUfs].filter(u => u.GAP_META_2025 !== null && !isNaN(u.GAP_META_2025)).sort((a,b) => b.GAP_META_2025 - a.GAP_META_2025);
+            initChart('chart-gap-metas', {
+                type: 'bar',
+                data: { labels: sorted.map(u => u.SIGLA_UF), datasets: [{ label: 'Gap vs Meta 2025 (p.p.)', data: sorted.map(u => u.GAP_META_2025), backgroundColor: sorted.map(v => v >= 0 ? '#10b981' : '#f43f5e') }] },
+                options: { plugins: { datalabels: { formatter: v=> (v>0?'+':'') + v.toFixed(1), anchor: (ctx) => ctx.dataset.data[ctx.dataIndex] >= 0 ? 'end' : 'start', align: (ctx) => ctx.dataset.data[ctx.dataIndex] >= 0 ? 'top' : 'bottom' }, legend: {display:false} } }
+            });
+        }
+
+        function renderParticipacao() {
+            const isBrasil = document.getElementById('global-region-filter').value === 'Brasil';
+            let datasets = [];
+            const labels = ['2023', '2024', '2025'];
+            
+            if (isBrasil && db.brasil) {
+                datasets.push({
+                    label: 'Média Brasil',
+                    data: [db.brasil.PARTICIPACAO_2023, db.brasil.PARTICIPACAO_2024, db.brasil.PARTICIPACAO_2025],
+                    backgroundColor: '#8b5cf6', borderRadius: 4
+                });
+            }
+
+            const colors = ['#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2'];
+            const rData = agruparRegiaoMedia(filteredUfs, ['PARTICIPACAO_2023', 'PARTICIPACAO_2024', 'PARTICIPACAO_2025']);
+            
+            if(!isBrasil) {
+                rData.forEach((d, idx) => {
+                    datasets.push({
+                        label: `Região ${d.regiao}`,
+                        data: [d.PARTICIPACAO_2023, d.PARTICIPACAO_2024, d.PARTICIPACAO_2025],
+                        backgroundColor: colors[idx%colors.length], borderRadius: 4
+                    });
+                });
+            }
+
+            initChart('chart-participacao', {
+                type: 'bar', data: { labels, datasets },
+                options: { plugins: { datalabels: { color: '#fff', formatter: v => v?.toFixed(0)+'%' } }, scales: { y: { min: 50, max: 100 } } }
+            });
+        }
+
+        function renderProjecaoLonga() {
+            let datasets = [];
+            const labels = ['2019', '2021', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+            
+            const avg = (campo) => {
+                let vals = filteredUfs.map(u => parseNum(u[campo])).filter(v => v !== null && !isNaN(v));
+                return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+            };
+
+            const histData = [avg('SAEB_2019'), avg('SAEB_2021'), avg('ALF_2023'), avg('ALF_2024'), avg('ALF_2025'), null, null, null, null, null];
+            const projData = [null, null, null, null, avg('ALF_2025'), avg('PROJ_2026'), avg('PROJ_2027'), avg('PROJ_2028'), avg('PROJ_2029'), avg('PROJ_2030')];
+            const metaData = [null, null, null, avg('META_2024'), avg('META_2025'), avg('META_2026'), avg('META_2027'), avg('META_2028'), avg('META_2029'), avg('META_2030')];
+
+            datasets.push({
+                label: 'Resultados (%)', data: histData, borderColor: '#2563eb', backgroundColor: '#2563eb', tension: 0.3, fill: false, borderWidth: 3
+            });
+            datasets.push({
+                label: 'Projeção Linear (%)', data: projData, borderColor: '#2563eb', borderDash: [5, 5], tension: 0.3, fill: false, borderWidth: 3
+            });
+            datasets.push({
+                label: 'Meta Nacional/Local (%)', data: metaData, borderColor: '#9ca3af', backgroundColor: '#9ca3af', type: 'line', pointStyle: 'rectRot', borderDash: [2, 2], fill: false, pointRadius: 5
+            });
+
+            initChart('chart-projecao-longa', {
+                type: 'line', data: { labels, datasets },
+                options: { 
+                    plugins: { datalabels: { 
+                        align: 'top', 
+                        formatter: v => v ? v.toFixed(0)+'%' : '' 
+                    } }, 
+                    scales: { y: { suggestedMin: 40 } }
+                }
+            });
+        }
+
+        function renderProjectionsTable() {
+            const ano = document.getElementById('projecao-ano-filter').value;
+            const tbody = document.getElementById('table-projections-body');
+            document.getElementById('th-proj-ano').innerText = 'Proj. ' + ano;
+            document.getElementById('th-meta-ano').innerText = 'Meta ' + ano;
+            
+            let projField = 'PROJ_' + ano;
+            let metaField = 'META_' + ano;
+            let statusField = 'STATUS_' + ano;
+
+            const sorted = [...filteredUfs].sort((a,b) => {
+                if(a[statusField] !== b[statusField]) return a[statusField] === 'Não atinge' ? -1 : 1;
+                return (b[projField]||0) - (a[projField]||0);
+            });
+
+            tbody.innerHTML = sorted.map((u, i) => {
+                const statusHtml = u[statusField] === 'Atinge' 
+                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Atinge</span>'
+                    : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Em Risco</span>';
+                
+                return `
+                <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-gray-100">
+                    <td class="px-4 py-2 font-medium text-gray-900">${u.SIGLA_UF}</td>
+                    <td class="px-4 py-2">${fPct(u.ALF_2025)}</td>
+                    <td class="px-4 py-2 text-indigo-600">${fPct(u.PARTICIPACAO_2025)}</td>
+                    <td class="px-4 py-2 text-gray-500">${u.TENDENCIA_ANUAL > 0 ? '+' : ''}${u.TENDENCIA_ANUAL ? u.TENDENCIA_ANUAL.toFixed(1) : '--'} p.p./a.</td>
+                    <td class="px-4 py-2 font-semibold text-gray-800">${fPct(u[projField])}</td>
+                    <td class="px-4 py-2 text-gray-600">${u[metaField] ? u[metaField] + '%' : 'N/A'}</td>
+                    <td class="px-4 py-2">${statusHtml}</td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => { renderDashboard(); });
+    </script>
+</body>
+</html>
